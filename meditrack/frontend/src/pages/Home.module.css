@@ -1,0 +1,3 @@
+.pageWrapper {
+  @apply flex flex-col min-h-screen bg-[#F8FAFC];
+}

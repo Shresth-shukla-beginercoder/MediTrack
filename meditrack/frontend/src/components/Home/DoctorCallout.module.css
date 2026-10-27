@@ -1,0 +1,43 @@
+.section {
+  @apply py-20 bg-gradient-to-br from-slate-950 via-[#0A1320] to-slate-900 text-white relative overflow-hidden;
+}
+
+.glow {
+  @apply absolute -right-20 -bottom-20 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none;
+}
+
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10;
+}
+
+.contentBox {
+  @apply flex flex-col lg:flex-row items-center justify-between gap-10 bg-white/[0.03] border border-white/10 rounded-3xl p-8 sm:p-12 backdrop-blur-xl;
+}
+
+.textGroup {
+  @apply max-w-2xl;
+}
+
+.badge {
+  @apply inline-block px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-bold uppercase tracking-wider mb-4;
+}
+
+.title {
+  @apply text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4;
+}
+
+.desc {
+  @apply text-slate-300 text-base leading-relaxed;
+}
+
+.actionGroup {
+  @apply flex flex-col sm:flex-row items-center gap-4 shrink-0 w-full sm:w-auto;
+}
+
+.doctorRegisterBtn {
+  @apply w-full sm:w-auto text-center px-8 py-4 rounded-2xl bg-teal-400 text-slate-950 font-bold text-sm hover:bg-teal-300 shadow-xl shadow-teal-500/20 transition-all duration-200 no-underline;
+}
+
+.doctorLoginBtn {
+  @apply w-full sm:w-auto text-center px-6 py-4 rounded-2xl bg-transparent border border-white/20 text-white font-semibold text-sm hover:bg-white/10 transition-colors no-underline;
+}

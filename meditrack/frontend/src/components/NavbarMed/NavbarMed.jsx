@@ -1,13 +1,4 @@
-
 import { useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  Container,
-  IconButton,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-
 import Brand from "./Brand";
 import DesktopNavigation from "./DesktopNavigation";
 import AccountActions from "./AccountActions";
@@ -16,54 +7,43 @@ import MobileNavigation from "./MobileNavigation";
 export function NavbarMed() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const closeMobileMenu = () => setMobileOpen(false);
-
   return (
-    <AppBar
-      position="sticky"
-      elevation={0}
-      color="inherit"
-      sx={{
-        bgcolor: "background.paper",
-        borderBottom: 1,
-        borderColor: "divider",
-      }}
-    >
-      <Container maxWidth="xl">
-        <Toolbar
-          disableGutters
-          sx={{
-            minHeight: { xs: 64, md: 76 },
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 2,
-          }}
-        >
+    <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-slate-200/60 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20 gap-4">
           <Brand />
-
           <DesktopNavigation />
-
           <AccountActions />
 
-          <IconButton
+          <button
             aria-label="Open navigation menu"
-            aria-expanded={mobileOpen}
             onClick={() => setMobileOpen(true)}
-            sx={{
-              display: { xs: "inline-flex", md: "none" },
-              color: "primary.main",
-            }}
+            className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-teal-700 hover:bg-slate-100 transition-colors focus:outline-none"
           >
-            <MenuIcon />
-          </IconButton>
-        </Toolbar>
-      </Container>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
 
       <MobileNavigation
         open={mobileOpen}
-        onClose={closeMobileMenu}
+        onClose={() => setMobileOpen(false)}
       />
-    </AppBar>
+    </header>
   );
 }
+
+export default NavbarMed;

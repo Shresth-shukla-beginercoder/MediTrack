@@ -1,43 +1,61 @@
-
-import { Box, Button } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
-
-const links = [
-  { label: "Home", path: "/" },
-  { label: "Medical Instructions", path: "/instructions" },
-];
+import { NavLink } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function DesktopNavigation() {
+  const { isAuthenticated, role } = useAuth();
+
+  const getLinkClass = (isActive) =>
+    `px-4 py-2 text-sm font-semibold rounded-full transition-all duration-200 no-underline ${
+      isActive
+        ? "bg-white text-teal-800 shadow-sm font-bold"
+        : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
+    }`;
+
   return (
-    <Box
-      component="nav"
+    <nav
       aria-label="Main navigation"
-      sx={{
-        display: { xs: "none", md: "flex" },
-        alignItems: "center",
-        gap: 1,
-      }}
+      className="hidden lg:flex items-center gap-1.5 bg-slate-100/70 p-1.5 rounded-full border border-slate-200/60 backdrop-blur-md"
     >
-      {links.map((item) => (
-        <Button
-          key={item.path}
-          component={RouterLink}
-          to={item.path}
-          sx={{
-            color: "text.primary",
-            fontWeight: 600,
-            textTransform: "none",
-            px: 1.5,
-            borderRadius: 2,
-            "&:hover": {
-              bgcolor: "primary.50",
-              color: "primary.dark",
-            },
-          }}
+      <NavLink
+        to="/"
+        className={({ isActive }) => getLinkClass(isActive)}
+      >
+        Home
+      </NavLink>
+
+      <NavLink
+        to="/instructions"
+        className={({ isActive }) => getLinkClass(isActive)}
+      >
+        Medical Library
+      </NavLink>
+
+      {isAuthenticated && role === "user" && (
+        <NavLink
+          to="/user/dashboard"
+          className={({ isActive }) => getLinkClass(isActive)}
         >
-          {item.label}
-        </Button>
-      ))}
-    </Box>
+          My Schedules
+        </NavLink>
+      )}
+
+      {isAuthenticated && role === "doctor" && (
+        <NavLink
+          to="/doctor/dashboard"
+          className={({ isActive }) => getLinkClass(isActive)}
+        >
+          Doctor Portal
+        </NavLink>
+      )}
+
+      {isAuthenticated && role === "admin" && (
+        <NavLink
+          to="/admin/dashboard"
+          className={({ isActive }) => getLinkClass(isActive)}
+        >
+          Admin Console
+        </NavLink>
+      )}
+    </nav>
   );
 }

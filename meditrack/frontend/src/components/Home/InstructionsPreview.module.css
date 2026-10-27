@@ -1,0 +1,63 @@
+.section {
+  @apply py-20 lg:py-28 bg-white border-t border-slate-200/60;
+}
+
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.topRow {
+  @apply flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6;
+}
+
+.titleArea {
+  @apply max-w-xl;
+}
+
+.badge {
+  @apply inline-block px-3 py-1 rounded-full bg-teal-50 text-teal-800 text-xs font-bold uppercase tracking-wider mb-3 border border-teal-200/60;
+}
+
+.title {
+  @apply text-3xl font-extrabold text-slate-900 tracking-tight;
+}
+
+.subtitle {
+  @apply text-slate-600 mt-2 text-base;
+}
+
+.viewAllLink {
+  @apply inline-flex items-center gap-2 text-sm font-bold text-teal-700 hover:text-teal-900 transition-colors no-underline group;
+}
+
+.grid {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6;
+}
+
+.card {
+  @apply p-6 rounded-3xl bg-slate-50 border border-slate-200/70 hover:border-teal-400 hover:shadow-xl transition-all duration-300 flex flex-col justify-between;
+}
+
+.categoryTag {
+  @apply text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-teal-100/80 text-teal-800 w-fit mb-3;
+}
+
+.medTitle {
+  @apply text-xl font-bold text-slate-900 mb-2;
+}
+
+.description {
+  @apply text-sm text-slate-600 leading-relaxed mb-6 line-clamp-3;
+}
+
+.cardFooter {
+  @apply flex items-center justify-between pt-4 border-t border-slate-200/60 text-xs text-slate-500;
+}
+
+.doctorName {
+  @apply font-semibold text-slate-700 flex items-center gap-1.5;
+}
+
+.readMoreBtn {
+  @apply text-teal-700 font-bold hover:underline;
+}
