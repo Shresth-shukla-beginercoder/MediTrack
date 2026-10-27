@@ -1,7 +1,11 @@
 import axios from "axios";
 
+// API base URL: set VITE_API_URL in .env (or the Docker build arg) to change it.
+// Falls back to the local backend on 5001 with the /api/v1 prefix.
+const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5001/api/v1";
+
 const api = axios.create({
-  baseURL: "http://localhost:5001/api/v1",
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },

@@ -1,0 +1,10 @@
+# Keep the build context lean and secrets out of the image
+node_modules
+dist
+npm-debug.log
+.env
+.env.example
+.env.local
+Dockerfile
+.dockerignore
+*.md

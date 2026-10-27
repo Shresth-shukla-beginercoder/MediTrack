@@ -1,0 +1,12 @@
+# Keep the image lean and secrets out of it
+node_modules
+npm-debug.log
+.env
+.env.example
+.env.local
+seed
+src/scripts
+Dockerfile
+.dockerignore
+*.md
+README.md

@@ -1,0 +1,51 @@
+# ---------------------------------------------------------------------------
+# MediTrack — Docker Compose
+#
+# Runs the frontend (nginx, 5173) and backend (Node/Express, 5001) together.
+# Both services reuse the EXISTING standalone PostgreSQL container
+# "meditrack-postgres" (postgres:17) via the external "meditrack-net"
+# network — no database container is created or modified here.
+#
+# Configuration comes from the root .env (gitignored, local only):
+#   DB_HOST=postgres      -> resolves on meditrack-net to the existing
+#                           "meditrack-postgres" container (DNS alias)
+#   DB_PORT=5432          -> container's internal port
+#   DB_NAME/DB_USER/DB_PASSWORD, JWT_*, CLIENT_ORIGIN
+#
+# Usage:
+#   docker compose up -d --build
+# ---------------------------------------------------------------------------
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Baked into the SPA at build time; host-mapped backend URL
+        VITE_API_URL: http://localhost:5001/api/v1
+    image: shresth7shukla/meditrack-frontend:latest
+    container_name: meditrack-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+    image: shresth7shukla/meditrack-backend:latest
+    container_name: meditrack-backend
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      PORT: "5001"
+    env_file:
+      - .env            # DB_* / JWT_* / CLIENT_ORIGIN (secrets stay local)
+    networks:
+      - meditrack-net  # reaches existing "meditrack-postgres" via alias "postgres"
+
+networks:
+  meditrack-net:
+    external: true
