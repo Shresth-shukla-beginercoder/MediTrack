@@ -1,5 +1,5 @@
 .section {
-  @apply py-20 bg-gradient-to-br from-slate-950 via-[#0A1320] to-slate-900 text-white relative overflow-hidden;
+  @apply py-20 bg-linear-to-br from-slate-950 via-[#0A1320] to-slate-900 text-white relative overflow-hidden;
 }
 
 .glow {
@@ -11,7 +11,7 @@
 }
 
 .contentBox {
-  @apply flex flex-col lg:flex-row items-center justify-between gap-10 bg-white/[0.03] border border-white/10 rounded-3xl p-8 sm:p-12 backdrop-blur-xl;
+  @apply flex flex-col lg:flex-row items-center justify-between gap-10 bg-white/3 border border-white/10 rounded-3xl p-8 sm:p-12 backdrop-blur-xl;
 }
 
 .textGroup {

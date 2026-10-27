@@ -4,11 +4,13 @@
  *
  * Purpose
  * -------
- * Insert a small, clearly-marked set of fictional test records into the five
+ * Insert a small, clearly-marked set of fictional test records into four
  * MediTrack tables so local development and manual testing have data to work
  * with:
  *
- *   admins, users, doctors, medication_instructions, medication_schedules
+ *   users, doctors, medication_instructions, medication_schedules
+ *
+ * The `admins` table is intentionally left completely untouched.
  *
  * Safety rules (full explanation in seed/README.md)
  * -------------------------------------------------
@@ -93,24 +95,28 @@ function assertDevTestTarget() {
 }
 
 // ---------------------------------------------------------------------------
-// Fictional, clearly-marked test data. 10 records per table.
+// Fictional, clearly-marked test data.
+//   2 users, 10 doctors (all 'approved'), 10 published educational
+//   instructions, 10 schedules (clearly marked as test data only).
+//   The admins table is NOT touched by this seeder.
 // ---------------------------------------------------------------------------
 const DEMO_PASSWORD = "DemoPass123!"; // fictional password for throwaway test accounts only
 
-const admins = Array.from({ length: 10 }, (_, i) => ({
-  full_name: `Demo Admin ${i + 1}`,
-  email: `demo.admin${i + 1}@example.com`,
-}));
+// Only 2 demo users are required. The reset pattern 'demo.user%@example.com'
+// still matches demo.user1–10, so users from older seed runs are cleaned up.
+const users = [
+  { full_name: "Demo User 1", email: "demo.user1@example.com" },
+  { full_name: "Demo User 2", email: "demo.user2@example.com" },
+];
 
-const users = Array.from({ length: 10 }, (_, i) => ({
-  full_name: `Demo User ${i + 1}`,
-  email: `demo.user${i + 1}@example.com`,
-}));
-
+// All demo doctors are 'approved' so the 10 published educational instructions
+// can be owned WITHOUT bypassing the app's authorization rules (public content
+// requires an 'approved' doctor). They are explicitly labelled fictional —
+// demo accounts, not real doctors.
 const doctors = Array.from({ length: 10 }, (_, i) => ({
   full_name: `Demo Doctor ${i + 1}`,
   email: `demo.doctor${i + 1}@example.com`,
-  degree: "MBBS - TEST DATA",
+  degree: "MBBS - FICTIONAL TEST DATA (not a real doctor)",
   graduation_year: 2015 + i,
   college_name: `Fictional Test College ${i + 1}`,
   professional_registration_number: `TEST-REG-${String(i + 1).padStart(3, "0")}`,
@@ -131,62 +137,300 @@ const doctors = Array.from({ length: 10 }, (_, i) => ({
   ][i],
   public_phone: null,
   social_media_url: null,
-  // Full state space so admin-review flows can be exercised. This does NOT
-  // bypass verification: public listing still requires 'approved'.
-  verification_status: [
-    "approved",
-    "pending",
-    "approved",
-    "rejected",
-    "pending",
-    "approved",
-    "suspended",
-    "pending",
-    "approved",
-    "pending",
-  ][i],
+  verification_status: "approved",
 }));
 
-// Only 'approved' doctors may own a published/withdrawn record; every other
-// doctor's seeded instruction is stored as 'draft'. This guarantees the seed
-// never attributes public content to an unverified doctor.
-const RAW_PUBLICATION = [
-  "published", "draft", "published", "published", "withdrawn",
-  "draft", "published", "published", "draft", "published",
+// 10 common conditions with real generic medicine names and simple, reliable,
+// medically accurate EDUCATIONAL content, with source links (CDC, MedlinePlus,
+// NICE, GINA, NIH, etc.). No doses, medication schedules, or guaranteed
+// recovery times are prescribed — only well-established general patterns are
+// described. Every record is clearly labelled as fictional demo content that
+// is NOT a real prescription or advice from a genuine doctor.
+const FULL_DISCLAIMER =
+  " FICTIONAL DEMO RECORD - educational content only; NOT a real prescription " +
+  "and NOT medical advice from a genuine doctor.";
+const SHORT_DISCLAIMER = " Fictional test data - not medical advice.";
+
+const RAW_PUBLICATION = Array(10).fill("published");
+
+const edu = ({ n, condition, condition_name, medicine_name, overview, usage, safety, seekCare }) => ({
+  condition_name,
+  title: `Demo Educational Instruction ${n} - ${condition} (educational only)`,
+  medical_overview: overview + FULL_DISCLAIMER,
+  medicine_name,
+  general_usage_information: usage + SHORT_DISCLAIMER,
+  safety_warnings: safety + SHORT_DISCLAIMER,
+  when_to_seek_care: seekCare + SHORT_DISCLAIMER,
+  publication_status:
+    doctors[n - 1].verification_status === "approved" ? RAW_PUBLICATION[n - 1] : "draft",
+});
+
+const instructions = [
+  edu({
+    n: 1,
+    condition: "Common Cold",
+    condition_name: "Common Cold (viral upper respiratory infection)",
+    medicine_name: "Paracetamol (acetaminophen)",
+    overview:
+      "A self-limiting viral infection of the upper airways (runny nose, sore throat, low-grade " +
+      "fever). No routine antiviral treatment is indicated; symptoms typically improve over 7-10 " +
+      "days, though a cough can linger a few weeks. Sources: CDC " +
+      "https://www.cdc.gov/common-cold/about/index.html ; MedlinePlus " +
+      "https://medlineplus.gov/commoncold.html",
+    usage:
+      "Supportive care only: rest, fluids, humidified air. OTC paracetamol or ibuprofen may be used " +
+      "for fever and aches according to the product label; never exceed the labeled maximum daily " +
+      "dose, and check combination products for duplicate paracetamol. This does not cure the cold.",
+    safety:
+      "Paracetamol: overdose causes liver damage; limit or avoid alcohol while using it. Aspirin: " +
+      "never give to children or teenagers (Reye's syndrome risk). NSAIDs: use caution with " +
+      "kidney disease, stomach ulcers, or in pregnancy (ask a clinician first).",
+    seekCare:
+      "Fever lasting more than 3 days or lasting beyond ~10 days, difficulty breathing or " +
+      "swallowing, high fever in infants or older adults, or any illness in someone who is " +
+      "immunocompromised or has serious heart/lung disease.",
+  }),
+  edu({
+    n: 2,
+    condition: "Seasonal Allergies",
+    condition_name: "Seasonal Allergic Rhinitis (hay fever)",
+    medicine_name: "Loratadine (second-generation oral antihistamine)",
+    overview:
+      "IgE-mediated inflammation of the nasal lining triggered by seasonal pollen or other " +
+      "allergens (sneezing, itchy/runny nose, itchy eyes). It is a chronic, controlled " +
+      "condition rather than one that is 'cured'. Sources: AAAAI " +
+      "https://www.aaaai.org/conditions-treatments/allergic-rhinitis ; MedlinePlus " +
+      "https://medlineplus.gov/allergicrhinitis.html",
+    usage:
+      "Allergen avoidance and saline nasal rinse help. Second-generation antihistamines treat " +
+      "sneezing and itch; intranasal corticosteroid sprays help persistent nasal blockage. " +
+      "Use per product label or a clinician's directions.",
+    safety:
+      "Antihistamines: sedation (greater with first-generation agents); alcohol increases " +
+      "drowsiness. Nasal steroids: minor nose bleeds with use; follow label directions. " +
+      "Pregnant or breastfeeding: check with a clinician first.",
+    seekCare:
+      "Wheezing or shortness of breath (asthma), high fever with facial pain or thick " +
+      "discharge (possible sinus infection), eye pain or vision changes, or symptoms that do " +
+      "not respond to over-the-counter treatment.",
+  }),
+  edu({
+    n: 3,
+    condition: "Migraine",
+    condition_name: "Migraine",
+    medicine_name: "Sumatriptan (triptan); OTC NSAIDs such as ibuprofen for mild attacks",
+    overview:
+      "Recurrent episodes of throbbing, usually one-sided headache with nausea, light and sound " +
+      "sensitivity. An untreated attack typically lasts 4-72 hours. Triggers include stress, " +
+      "missed sleep, and hormonal changes; keeping a symptom diary helps identify them. " +
+      "Sources: MedlinePlus https://medlineplus.gov/migraine.html ; NICE migraine guideline " +
+      "https://www.nice.org.uk/guidance/cg150",
+    usage:
+      "Treatment works best when taken early in an attack. Triptans are rescue medicines, not " +
+      "prevention; frequent attacks (roughly 4+ headache days per month) are a reason to see a " +
+      "clinician to discuss prevention options.",
+    safety:
+      "Triptans: not suitable for people with coronary, stroke, or other vascular disease, " +
+      "uncontrolled high blood pressure, or certain migraine types (hemiplegic or brainstem); " +
+      "follow labeled maximum per-day limits. NSAIDs: stomach, kidney, and heart risks with " +
+      "prolonged use.",
+    seekCare:
+      "'Worst headache of your life', sudden thunderclap onset, new weakness/numbness or " +
+      "vision or speech changes, fever with stiff neck, an attack lasting more than 72 hours, " +
+      "or first migraine after age 50.",
+  }),
+  edu({
+    n: 4,
+    condition: "Type 2 Diabetes",
+    condition_name: "Type 2 Diabetes Mellitus",
+    medicine_name: "Metformin (first-line oral agent)",
+    overview:
+      "Chronic condition of high blood glucose from insulin resistance; diagnosis is made by a " +
+      "clinician using laboratory tests. It is managed for life rather than cured; consistent " +
+      "management lowers the risk of heart, kidney, eye, and nerve complications. Sources: " +
+      "American Diabetes Association https://diabetes.org/understanding-diabetes/type-2-diabetes " +
+      "; MedlinePlus https://medlineplus.gov/type2diabetes.html",
+    usage:
+      "Regular activity and a healthy dietary pattern are first-line. Metformin is commonly the " +
+      "first oral medicine and is usually taken with food; blood-glucose targets are " +
+      "individualized. Blood sugar and HbA1c are monitored periodically by a care team.",
+    safety:
+      "Metformin: early stomach upset (often settles; taking with food helps), B12 deficiency " +
+      "with long-term use, and a rare but serious lactic acidosis risk with serious kidney " +
+      "disease, dehydration, or contrast imaging. Any dose or stop/continue decision is a " +
+      "clinician's, not self-prescribing.",
+    seekCare:
+      "Signs of very high blood sugar: frequent urination, excessive thirst, unexplained " +
+      "weight loss, repeated infections, or confusion. Urgent care for nausea, vomiting, or " +
+      "deep/rapid breathing. Hypoglycemia symptoms (shaking, sweating, confusion) when taking " +
+      "certain medicines - seek care promptly.",
+  }),
+  edu({
+    n: 5,
+    condition: "Hypertension",
+    condition_name: "Hypertension (high blood pressure)",
+    medicine_name:
+      "Amlodipine (calcium-channel blocker - one of several first-line classes; choice is a clinician's)",
+    overview:
+      "Sustently elevated arterial pressure, usually without symptoms, that raises the risk of " +
+      "stroke, heart attack, and kidney damage. Diagnosis and treatment planning are done by a " +
+      "clinician. Sources: NICE blood pressure guideline " +
+      "https://www.nice.org.uk/guidance/cg136 ; NHS " +
+      "https://www.nhs.uk/conditions/high-blood-pressure/",
+    usage:
+      "Medication (when indicated) is usually long-term; keep a home blood-pressure log and " +
+      "take medicines consistently. Reducing salt, maintaining a healthy weight, regular " +
+      "activity, and limiting alcohol all help. Do not stop medicines without medical advice.",
+    safety:
+      "Amlodipine: ankle swelling and flushing are common. ACE inhibitors/ARBs: kidney function " +
+      "and potassium are checked after starting. Do not self-select or self-adjust " +
+      "antihypertensives.",
+    seekCare:
+      "Readings of 180/120 mmHg or higher WITH symptoms (chest pain, shortness of breath, " +
+      "weakness, slurred speech, vision change) are an emergency. A very high reading without " +
+      "symptoms still needs same-day clinician contact.",
+  }),
+  edu({
+    n: 6,
+    condition: "Acid Reflux",
+    condition_name: "Gastroesophageal Reflux Disease (GERD)",
+    medicine_name: "Omeprazole (proton-pump inhibitor); antacids for breakthrough",
+    overview:
+      "Reflux of stomach acid into the esophagus causing heartburn and acid regurgitation. It " +
+      "is managed with lifestyle changes and short-term acid suppression; symptoms usually " +
+      "improve within days for antacids and over days-to-weeks for PPIs. Sources: MedlinePlus " +
+      "https://medlineplus.gov/ency/article/000831.htm ; NHS " +
+      "https://www.nhs.uk/conditions/heartburn-and-indigestion/",
+    usage:
+      "Lifestyle steps first: weight reduction, smaller meals, not lying down for 2-3 hours " +
+      "after eating, elevating the head of the bed, avoiding personal trigger foods. Short " +
+      "OTC PPI courses follow the product label; antacids can be used for breakthrough " +
+      "symptoms. Recurring needs a clinician's plan.",
+    safety:
+      "Do not exceed 14 days of OTC PPI use without clinician advice; recurrent flares " +
+      "(3+ months per year) need review. Long-term PPI use (clinician-directed) is " +
+      "associated with lower bone density and mineral loss, so it is periodically reviewed " +
+      "and kept at the lowest effective dose.",
+    seekCare:
+      "Alarm features: difficulty or pain on swallowing, unexplained weight loss, vomiting " +
+      "blood or black stools, new-onset symptoms in people over 50, or persistent symptoms " +
+      "unrelieved by OTC treatment.",
+  }),
+  edu({
+    n: 7,
+    condition: "Eczema",
+    condition_name: "Eczema (atopic dermatitis)",
+    medicine_name: "Hydrocortisone 1% (mild topical corticosteroid)",
+    overview:
+      "Chronic inflammatory skin condition with flares of itchy, red, dry patches, driven by a " +
+      "skin-barrier defect and immune over-response. It is a lifelong management condition " +
+      "rather than one that is cured. Sources: American Academy of Dermatology " +
+      "https://www.aad.org/public/diseases/eczema ; NHS " +
+      "https://www.nhs.uk/conditions/eczema/",
+    usage:
+      "Daily emollients (moisturizers), used generously, form the base of treatment; use lukewarm " +
+      "water and gentle, fragrance-free cleansers. During flares, a short course of a mild " +
+      "topical steroid per label or clinician directions. Avoid known triggers such as " +
+      "fragrances, dyes, and very hot showers.",
+    safety:
+      "Prolonged or repeated use of topical steroids (especially on the face, in skin folds, " +
+      "or in children) can thin the skin and cause stretch marks; keep courses short as " +
+      "directed. Do not apply steroid creams to broken or infected skin without advice.",
+    seekCare:
+      "Spreading, weeping, or honey-colored crusting (possible infection), fever, painful " +
+      "worsening, severe sleep or daily-life impact, or no improvement with OTC treatment.",
+  }),
+  edu({
+    n: 8,
+    condition: "Asthma",
+    condition_name: "Asthma",
+    medicine_name: "Salbutamol (albuterol) rescue inhaler; inhaled corticosteroid controller",
+    overview:
+      "Chronic airway inflammation with episodic wheeze, chest tightness, and shortness of " +
+      "breath, controlled by daily inhaled corticosteroid therapy plus a reliever inhaler " +
+      "for symptoms. Asthma is managed long-term, not 'cured'. Sources: GINA report " +
+      "https://ginasthma.org/gina-report/gina-main-report/ ; MedlinePlus " +
+      "https://medlineplus.gov/asthma.html",
+    usage:
+      "Use the controller inhaler every day as directed, even when feeling well; use the " +
+      "reliever only for symptoms. Inhaler technique matters - demonstrate with a clinician. " +
+      "A written asthma action plan and trigger avoidance (smoke, dust, strong odors) are " +
+      "recommended.",
+    safety:
+      "Reliever inhalers can cause tremor, palpitations, and low potassium with heavy use. " +
+      "Needing the reliever more than a few times a week or waking at night with symptoms " +
+      "means the asthma is poorly controlled and needs a clinician review - do NOT simply " +
+      "stop the controller.",
+    seekCare:
+      "Emergency signs: rescue inhaler not helping, difficulty speaking in full sentences, " +
+      "lips/fingertips turning blue, or chest movement not keeping up with breathing. These " +
+      "need immediate emergency care.",
+  }),
+  edu({
+    n: 9,
+    condition: "Iron Deficiency",
+    condition_name: "Iron-Deficiency Anemia",
+    medicine_name: "Ferrous sulfate (oral iron supplement)",
+    overview:
+      "Depleted iron stores leading to anemia, most often from blood loss, with symptoms " +
+      "including fatigue, pallor, and (in children) pica. Diagnosis requires a clinician's " +
+      "laboratory confirmation. Replenishing iron raises hemoglobin over weeks; finding and " +
+      "treating the CAUSE of the iron loss is the core of care. Sources: MedlinePlus " +
+      "https://medlineplus.gov/ency/article/002256.htm ; NIH Office of Dietary " +
+      "Supplements https://ods.od.nih.gov/factsheets/Iron-Consumer/",
+    usage:
+      "Oral iron is taken under clinician supervision after confirmed deficiency. Taking it " +
+      "with vitamin C (e.g. a glass of orange juice) improves absorption; tea, coffee, and " +
+      "calcium reduce it - separate them. Typical repletion runs for weeks to a few months " +
+      "until stores refill, guided by repeat blood tests.",
+    safety:
+      "Common side effects: constipation, stomach upset, dark stools (harmless). Iron is " +
+      "toxic in large accidental ingestions - keep all supplements locked away from " +
+      "children. Do not self-supplement without a lab-confirmed deficiency; excess iron is " +
+      "harmful.",
+    seekCare:
+      "Visible or suspected blood loss (including black, tarry stools), shortness of breath, " +
+      "chest pain or a fast heartbeat from anemia, or symptoms that do not improve with the " +
+      "prescribed course.",
+  }),
+  edu({
+    n: 10,
+    condition: "Osteoarthritis",
+    condition_name: "Osteoarthritis (knee/hip - most common joints)",
+    medicine_name:
+      "Diclofenac (topical NSAID gel - a safer example than oral NSAIDs for chronic use)",
+    overview:
+      "Progressive wear of joint cartilage causing pain and stiffness, usually in the " +
+      "knees or hips with aging. There is no cure; the goal is symptom control and " +
+      "maintaining function. Sources: MedlinePlus " +
+      "https://medlineplus.gov/osteoarthritis.html ; NICE osteoarthritis guidance " +
+      "https://www.nice.org.uk/guidance/cg172",
+    usage:
+      "Regular low-impact exercise, weight management where relevant, and physiotherapy are " +
+      "first-line. Topical NSAID gels applied to the joint per label have lower systemic " +
+      "effects than oral NSAIDs; paracetamol is another option. Pain control usually " +
+      "improves gradually with consistent use of these measures.",
+    safety:
+      "Oral NSAIDs: stomach bleeding, kidney, and heart risks with chronic use - prefer the " +
+      "lowest effective course and review with a clinician. Topical NSAIDs are generally " +
+      "better tolerated but should not be used on broken skin. Do not combine multiple " +
+      "NSAID products.",
+    seekCare:
+      "A joint that becomes red, warm, and feverish (possible infection or crystal " +
+      "arthritis - urgent), new trauma or significant functional decline, or weight loss " +
+      "and night pain out of proportion to typical osteoarthritis.",
+  }),
 ];
 
-const instructions = Array.from({ length: 10 }, (_, i) => ({
-  condition_name: [
-    "Common Cold",
-    "Seasonal Allergies",
-    "Migraine",
-    "Type 2 Diabetes",
-    "Hypertension",
-    "Acid Reflux",
-    "Eczema",
-    "Asthma",
-    "Iron Deficiency",
-    "Osteoarthritis",
-  ][i],
-  title: `Demo Educational Instruction ${i + 1}`,
-  medical_overview:
-    "Fictional educational content for testing the application only. " +
-    "This is not medical advice.",
-  medicine_name: `Demo Medicine ${i + 1} - NOT FOR USE`,
-  general_usage_information:
-    "Placeholder text. No dosage or treatment instructions are provided. " +
-    "Consult a qualified healthcare professional for personal medical advice.",
-  safety_warnings:
-    "TEST DATA ONLY. Do not use this record to guide medication decisions.",
-  when_to_seek_care:
-    "For real symptoms or urgent concerns, contact an appropriate healthcare professional.",
-  publication_status:
-    doctors[i].verification_status === "approved" ? RAW_PUBLICATION[i] : "draft",
-}));
-
+// Private medication schedules — reference the 2 demo users (round-robin). The
+// medicine names and reminder times are clearly fictional TEST DATA: no real
+// medicine names, no real doses, no real medication schedules.
 const schedules = Array.from({ length: 10 }, (_, i) => ({
-  medicine_name: `Demo Schedule Medicine ${i + 1}`,
-  dosage_instructions: "TEST DATA ONLY - not a real dosage instruction.",
+  user_index: i % users.length, // round-robin between demo.user1 and demo.user2
+  medicine_name: `Demo Schedule Medicine ${i + 1} (TEST DATA - not a real medicine)`,
+  dosage_instructions:
+    "TEST DATA ONLY - placeholder reminder set. This is not a real dose, medication " +
+    "schedule, or treatment plan. Never use it for real medication decisions.",
   // reminder_times lands in the existing TIME[] column; each has 1+ times.
   reminder_times: [
     ["08:00:00", "20:00:00"],
@@ -214,7 +458,8 @@ const RESET_RULES = [
   { table: "medication_instructions", column: "title", pattern: "Demo Educational Instruction%" },
   { table: "doctors", column: "email", pattern: "demo.doctor%@example.com" },
   { table: "users", column: "email", pattern: "demo.user%@example.com" },
-  { table: "admins", column: "email", pattern: "demo.admin%@example.com" },
+  // NOTE: the admins table is intentionally left alone — never read, deleted,
+  // or inserted by this seeder.
 ];
 
 /**
@@ -408,22 +653,7 @@ async function main() {
     // for every throwaway test account.
     const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
 
-    // 1) Admins
-    console.log("\nadmins:");
-    for (const a of admins) {
-      const r = await ensureByEmail(
-        client, write, "admins", "admin_id", a.email,
-        `INSERT INTO admins (full_name, email, password_hash)
-         VALUES ($1, $2, $3)
-         ON CONFLICT (email) DO NOTHING
-         RETURNING admin_id`,
-        [a.full_name, a.email, passwordHash],
-      );
-      console.log(`  ${a.email}${label(r)} -> id ${r.id ?? "-"}`);
-      mark(r);
-    }
-
-    // 2) Users
+    // 1) Users
     const userRowIds = [];
     console.log("\nusers:");
     for (const u of users) {
@@ -440,7 +670,7 @@ async function main() {
       mark(r);
     }
 
-    // 3) Doctors
+    // 2) Doctors
     const doctorRowIds = [];
     console.log("\ndoctors:");
     for (const d of doctors) {
@@ -469,7 +699,7 @@ async function main() {
       mark(r);
     }
 
-    // 4) Medication instructions — each references doctor #i (existing FK).
+    // 3) Medication instructions — each references doctor #i (existing FK).
     console.log("\nmedication_instructions:");
     for (let i = 0; i < instructions.length; i++) {
       const r = await ensureInstruction(client, write, doctorRowIds[i], instructions[i]);
@@ -480,14 +710,16 @@ async function main() {
       mark(r);
     }
 
-    // 5) Private medication schedules — each references user #i (existing FK),
-    //    with 1+ reminder times in the TIME[] column.
+    // 4) Private medication schedules — each references a demo user (round-robin
+    //    via user_index), with 1+ reminder times in the TIME[] column. Names are
+    //    clearly fictional TEST DATA; no real medicines or doses are used.
     console.log("\nmedication_schedules:");
     for (let i = 0; i < schedules.length; i++) {
-      const r = await ensureSchedule(client, write, userRowIds[i], schedules[i]);
+      const ownerIndex = schedules[i].user_index;
+      const r = await ensureSchedule(client, write, userRowIds[ownerIndex], schedules[i]);
       console.log(
         `  "${schedules[i].medicine_name}" (${schedules[i].reminder_times.length} reminders)${label(r)}` +
-          ` -> user ${userRowIds[i] ?? "-"}`,
+          ` -> user ${userRowIds[ownerIndex] ?? "-"}`,
       );
       mark(r);
     }
@@ -505,7 +737,11 @@ async function main() {
         `Seed complete. Reset ${resetCount} old demo row(s) and re-created ` +
           `${tally.created} new record(s)${tally.existing ? `; ${tally.existing} pre-existing kept` : ""}.`,
       );
-      console.log(`10 records per table: admins, users, doctors, instructions, schedules.`);
+      console.log(
+        `Seeded: ${users.length} users, ${doctors.length} doctors (all approved), ` +
+          `${instructions.length} published educational instructions, ` +
+          `${schedules.length} test-data schedules. (admins table untouched.)`,
+      );
       console.log(`Demo password for all accounts: ${DEMO_PASSWORD}  (test data only)`);
     }
     console.log("All records are fictional test data; only demo rows were reset.");

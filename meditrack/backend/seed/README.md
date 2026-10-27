@@ -2,19 +2,47 @@
 
 This `seed/` folder is a self-contained utility for loading **fictional, clearly-marked
 test data** into the MediTrack PostgreSQL database for local development and manual
-testing. It seeds **10 records** for each of the following existing tables:
+testing. It seeds the following existing tables:
 
-| Table | Purpose |
-|-------|---------|
-| `admins` | Administrative accounts |
-| `users` | Patient/user accounts |
-| `doctors` | Doctor accounts across all verification states |
-| `medication_instructions` | Educational content, one per doctor |
-| `medication_schedules` | Private schedules, one per user (with a `TIME[]` reminder list) |
+| Table | Rows seeded | Notes |
+|-------|-------------|-------|
+| `users` | 2 | `demo.user1` and `demo.user2` only |
+| `doctors` | 10 | **All `approved`** so the educational instructions can be published without bypassing the app's authorization rules |
+| `medication_instructions` | 10 | **All `published`** educational content, one per doctor |
+| `medication_schedules` | 10 | Private schedules spread across the 2 demo users (round-robin) |
+
+The **`admins` table is intentionally not touched at all** — the seeder never reads,
+inserts, or deletes admin rows.
 
 All foreign-key relationships are preserved: every instruction references an existing
-doctors row, and every schedule references an existing users row and stores one or more
-reminder times in the existing `reminder_times TIME[]` column.
+doctors row, and every schedule references one of the two existing users and stores one
+or more reminder times in the existing `reminder_times TIME[]` column.
+
+## What the educational instructions contain
+
+The 10 `medication_instructions` rows cover common conditions
+(cold, seasonal allergies, migraine, type 2 diabetes, hypertension, acid reflux, eczema,
+asthma, iron-deficiency anemia, osteoarthritis). Each record:
+
+- uses **real generic medicine names** (e.g. paracetamol/acetaminophen, loratadine,
+  sumatriptan, metformin, amlodipine, omeprazole, hydrocortisone 1%, salbutamol,
+  ferrous sulfate, topical diclofenac);
+- provides **simple, medically accurate, educational** overviews, general care advice,
+  medicine safety warnings, when-to-see-a-doctor guidance, and realistic (non-guaranteed)
+  recovery information where the evidence supports it;
+- links **trustworthy medical sources** in `medical_overview` (CDC, MedlinePlus, NICE,
+  GINA, NIH ODS, NHS, AAAAI, ADA, AAD);
+- **does not** invent doses, medication schedules, or guaranteed recovery times;
+- is explicitly labelled, in multiple fields, as a **fictional demo record — educational
+  content, not a real prescription or advice from a genuine doctor**.
+
+All doctors are labelled fictional demo accounts (degree, college, workplace, and
+registration fields all say `FICTIONAL TEST DATA` / `FICTIONAL TEST AUTHORITY`).
+
+The 10 `medication_schedules` rows remain **purely fictional test data**: their medicine
+names are `Demo Schedule Medicine N (TEST DATA - not a real medicine)` and their
+dosage-instruction text says they are placeholder reminders, not real medication
+instructions. No real medicine names or doses appear in schedules.
 
 ## Strict scope (read first)
 
@@ -26,9 +54,12 @@ Everything in this task is confined to this folder:
   **not** modified. No database migrations or table changes were made. No packages were
   installed.
 - On each run the seeder **deletes only its own previously-seeded demo rows**
-  (matched by demo markers: `demo.*@example.com` and `Demo ...` names) and
-  **re-inserts the same dataset**. It never `DROP`s or `TRUNCATE`s a table and
-  never touches any row that does not match a demo marker.
+  (matched by demo markers: `demo.*@example.com` emails and `Demo ...` titles /
+  medicine names) and **re-inserts the same dataset**. It never `DROP`s or `TRUNCATE`s
+  a table and never touches any row that does not match a demo marker.
+- Because the current seed only creates 2 users, a re-run will also clean up any
+  `demo.user3@example.com`…`demo.user10@example.com` rows left by older seed
+  versions — those are still demo-marker rows, so removing them is within scope.
 
 If a future change would need to touch a file outside `seed/`, stop and get explicit
 permission first.
@@ -53,14 +84,13 @@ necessary to make it correct and safe against *this* backend:
 3. **Explicit `.env` load path.** The seeder loads `../.env` relative to the script, so
    `node seed/seed.js` works from the `backend/` directory (or any CWD).
 
-4. **Reset-and-refill (re-runnable, no duplicates).** The draft inserted unconditionally,
-   so re-running it created duplicates. Now each run first **deletes the previously-seeded
-   demo rows** and then re-inserts the same clean dataset, so the data is identical every
-   time you run it:
-   - Deletion is scoped to demo markers only — `email LIKE 'demo.admin%@example.com'`,
-     `'demo.user%@example.com'`, `'demo.doctor%@example.com'`, instruction
+4. **Reset-and-refill (re-runnable, no duplicates).** Each run first **deletes the
+   previously-seeded demo rows** and then re-inserts the same clean dataset:
+   - Deletion is scoped to demo markers only — `email LIKE 'demo.user%@example.com'`,
+     `email LIKE 'demo.doctor%@example.com'`, instruction
      `title LIKE 'Demo Educational Instruction%'`, and schedule
-     `medicine_name LIKE 'Demo Schedule Medicine%'`.
+     `medicine_name LIKE 'Demo Schedule Medicine%'`. The admins table is never
+     queried or modified.
    - Children (`medication_instructions`, `medication_schedules`) are deleted **before**
      their owners (`doctors`, `users`) so foreign keys stay valid.
    - All deletes and re-inserts run in one transaction and roll back together on any
@@ -76,25 +106,14 @@ necessary to make it correct and safe against *this* backend:
    many demo rows *would* be deleted and how many would be re-created, and makes **no**
    changes.
 
-7. **No verification bypass.** An instruction is stored as `published`/`withdrawn` only
-   when its owning doctor's `verification_status` is `approved`; otherwise it is stored
-   as `draft`. Public listing logic (which requires an `approved` doctor) is therefore
-   never bypassed. Doctor rows are seeded across the full status set
-   (`approved`/`pending`/`rejected`/`suspended`) so admin-review flows can be tested;
-   the nullable `doctors.reviewed_by_admin_id` is left `NULL`, so no admin approval is
-   implied.
-
-## Requirements that could NOT be satisfied without leaving `seed/`
-
-**None.** Every requirement was satisfiable inside `seed/`:
-
-- The five tables already exist with the required columns, including
-  `medication_schedules.reminder_times TIME[]`; no migration or DDL was needed.
-- `bcrypt` was already a dependency; no install was required.
-- No npm script was added (the `package.json` is untouched); the seeder runs via plain
-  `node seed/seed.js`.
-- No `.env`, `db.js`, model, or service file had to change — the seeder only *reads*
-  the existing `DB_*` / `NODE_ENV` values.
+7. **No verification bypass.** An instruction is stored as `published` only when its
+   owning doctor's `verification_status` is `approved`; otherwise it would be stored as
+   `draft`. Because every demo doctor is seeded as `approved`, all 10 educational
+   instructions are published — and that is permitted by the app's own rules (public
+   content requires an approved doctor), not a bypass of them. The nullable
+   `doctors.reviewed_by_admin_id` is left `NULL`, so no admin approval is implied.
+   All published instructions are labelled educational demo content, not real
+   prescriptions.
 
 ## Prerequisites
 
@@ -108,25 +127,28 @@ necessary to make it correct and safe against *this* backend:
 From the **backend** directory (`.../meditrack/backend`):
 
 ```bash
-# Reset the demo dataset and re-seed it (gated by the dev/test guard). Re-run safe.
-node seed/seed.js
+# Read-only preview first — shows what would be deleted and re-created.
+NODE_ENV=development node seed/seed.js --dry-run
 
-# Read-only preview — shows how many demo rows would be deleted and re-created.
-node seed/seed.js --dry-run
+# Then reset the demo dataset and re-seed it (gated by the dev/test guard). Re-run safe.
+NODE_ENV=development node seed/seed.js
 ```
 
-There is deliberately **no** npm script (the task requires `package.json` to remain
-unchanged). After a successful run, all demo accounts share this **test-only**
-password: `DemoPass123!` (printed at the end of the run).
+(On Windows PowerShell use `$env:NODE_ENV="development"; node seed/seed.js`.)
+
+There is deliberately **no** npm script (the `package.json` is untouched); the seeder
+runs via plain `node seed/seed.js`. After a successful run, all demo accounts share
+this **test-only** password: `DemoPass123!` (printed at the end of the run).
 
 ### Safety reminders
 
 - The seeder will not touch a database it cannot identify as a local dev/test target.
 - On each run it deletes **only** the previously-seeded demo rows (matched by demo
-  marker) and re-inserts them. It never touches unrelated rows and never drops or
+  markers) and re-inserts them. It never touches unrelated rows and never drops or
   truncates a table.
-- All seeded content is fictional and marked as test data; it is **not** medical
-  advice and must not be used for real medication decisions.
+- All seeded content is fictional. The educational instructions are **not medical
+  advice** and must not be used for real medication decisions. The medication
+  schedules are placeholder test data only — they contain no real medicines or doses.
 
 ## Verifying the results (read-only SQL)
 
@@ -136,10 +158,8 @@ Run these in your Postgres client (e.g. `psql` against `meditrack_db`). They are
 ### 1. Count the seeded rows per table
 
 ```sql
-SELECT 'admins'::text AS table_name, COUNT(*) AS seeded_rows
-FROM admins WHERE email LIKE 'demo.admin%@example.com'
-UNION ALL
-SELECT 'users', COUNT(*) FROM users WHERE email LIKE 'demo.user%@example.com'
+SELECT 'users'::text AS table_name, COUNT(*) AS seeded_rows
+FROM users WHERE email LIKE 'demo.user%@example.com'
 UNION ALL
 SELECT 'doctors', COUNT(*) FROM doctors WHERE email LIKE 'demo.doctor%@example.com'
 UNION ALL
@@ -150,8 +170,10 @@ SELECT 'medication_schedules', COUNT(*)
 FROM medication_schedules WHERE medicine_name LIKE 'Demo Schedule Medicine%';
 ```
 
-Expect `10` for each table after any run. Re-running resets the demo rows and re-creates
-the same 10, so the count stays `10` — no duplicates.
+After a fresh run expect: **users 2, doctors 10, instructions 10, schedules 10**
+(32 demo rows total). The `admins` table is not managed by this seeder and is not
+counted here. Re-running resets the demo rows and re-creates the same dataset, so
+the counts stay stable — no duplicates.
 
 ### 2. Foreign-key integrity — orphaned rows should be 0
 
@@ -165,7 +187,7 @@ WHERE d.doctor_id IS NULL;
 -- Schedules that do NOT reference an existing user (expect 0):
 SELECT COUNT(*) AS orphan_schedules
 FROM medication_schedules s
-LEFT JOIN users u ON u.user_id = s.user_id
+LEFT JOIN users u ON s.user_id = u.user_id
 WHERE u.user_id IS NULL;
 ```
 
@@ -196,7 +218,7 @@ SELECT
   u.user_id,
   u.full_name
 FROM medication_schedules s
-JOIN users u ON u.user_id = s.user_id
+JOIN users u ON s.user_id = u.user_id
 WHERE u.email LIKE 'demo.user%@example.com'
 ORDER BY s.schedule_id;
 ```
@@ -223,12 +245,14 @@ WHERE mi.publication_status = 'published'
 ORDER BY mi.instruction_id;
 ```
 
+All 10 demo educational instructions should appear here.
+
 ### 6. Confirm the reset on re-run
 
 Run `node seed/seed.js` again. The demo rows are deleted and re-created, so their ids
-will differ from the previous run, but the step-1 counts stay at `10` each and the
-content is identical. The seeder reports `Reset 50 old demo row(s) and re-created 50
-new record(s)`. Any non-demo (real) rows are untouched.
+will differ from the previous run, but the step-1 counts stay at the same totals and
+the content is identical. The seeder reports how many old demo rows it reset. Any
+non-demo (real) rows are untouched.
 
 ## Files in this folder
 
