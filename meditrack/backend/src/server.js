@@ -6,9 +6,9 @@ import pool from "./config/db.js";
 const PORT = process.env.PORT || 5000;
 
 // Start the backend server
-const server = app.listen(PORT, () => {
-  console.log(`MediTrack server is running at http://localhost:${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(`MediTrack server is running on port ${PORT}`);
+  console.log(`Health check: /api/health`);
 });
 
 // Handle server startup errors
