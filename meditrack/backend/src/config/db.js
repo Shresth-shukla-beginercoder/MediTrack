@@ -1,14 +1,14 @@
+
 import "dotenv/config";
 import { Pool } from "pg";
 
 const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT || 5435),
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  connectionString:
+    process.env.DATABASE_URL ||
+    (process.env.DB_HOST
+      ? `postgresql://${encodeURIComponent(process.env.DB_USER)}:${encodeURIComponent(process.env.DB_PASSWORD)}@${process.env.DB_HOST}:${process.env.DB_PORT || 5435}/${process.env.DB_NAME}`
+      : undefined),
 
-  // Enable SSL for the production Neon database
   ssl:
     process.env.NODE_ENV === "production"
       ? { rejectUnauthorized: true }
