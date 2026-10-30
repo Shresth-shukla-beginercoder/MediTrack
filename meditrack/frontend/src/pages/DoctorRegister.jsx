@@ -139,14 +139,15 @@ export default function DoctorRegister() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-              <PasswordInput
-                id="password"
-                label="Password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                dark
-              />
+           <PasswordInput
+  id="password"
+  name="password"
+  label="Password"
+  value={formData.password}
+  onChange={handleChange}
+  placeholder="••••••••"
+  dark
+/>
 
               <div className="flex flex-col gap-1.5">
                 <label className={labelClass} htmlFor="public_phone">

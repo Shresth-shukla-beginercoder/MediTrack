@@ -3,6 +3,7 @@ import styles from "./PasswordInput.module.css";
 
 export default function PasswordInput({
   id,
+  name,
   label,
   value,
   onChange,
@@ -23,6 +24,7 @@ export default function PasswordInput({
       <div className={styles.inputWrapper}>
         <input
           id={id}
+          name={name}
           type={show ? "text" : "password"}
           required={required}
           value={value}
