@@ -1,8 +1,54 @@
-# MediTrack — Medication Instructions and Reminder Management
+ <p align="center">
+  <img src="docs/images/meditrack-logo.png" alt="MediTrack Logo" width="160">
+</p>
 
-MediTrack is a full-stack web application designed to help users access doctor-provided medication instructions and manage their own medication schedules. It includes separate roles for users, doctors, and administrators, with authentication, role-based access control, doctor verification, and private medication schedules.
+<h1 align="center">MediTrack</h1>
 
-> **Project status:** Backend development and manual API testing are underway, and the tested authentication, administration, instruction-access, and schedule-management flows have been implemented. The React frontend is still under development.
+<p align="center">
+  <strong>Medication Instructions and Reminder Management</strong>
+</p>
+
+<p align="center">
+  <a href="https://medi-track-lake-two.vercel.app/">
+    <img src="https://img.shields.io/badge/Live_Frontend-Vercel-black?logo=vercel" alt="Live Frontend">
+  </a>
+  <a href="https://meditrack-j58b.onrender.com">
+    <img src="https://img.shields.io/badge/Backend_API-Render-46E3B7?logo=render&logoColor=white" alt="Backend API">
+  </a>
+  <img src="https://img.shields.io/badge/version-1.0.0-blue" alt="Version 1.0.0">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB" alt="React">
+  <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/Express-000000?logo=express&logoColor=white" alt="Express">
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL">
+</p>
+
+<p align="center">
+  <a href="https://github.com/Shresth-shukla-beginercoder/MediTrack">GitHub Repository</a> ·
+  <a href="https://medi-track-lake-two.vercel.app/">Live Application</a> ·
+  <a href="https://meditrack-j58b.onrender.com/api/health">Backend Health</a>
+</p>
+
+---
+
+## Project Status
+
+MediTrack is an ongoing full-stack development project. Backend development and manual API testing are underway, and the tested authentication, administration, instruction-access, and schedule-management flows have been implemented. The React frontend is still under development.
+
+## Screenshots
+
+### Home Page
+
+![MediTrack Home Page](docs/images/home-page.png)
+
+### Doctor Registration
+
+![MediTrack Doctor Registration](docs/images/doctor-registration.png)
+
+---
 
 ## Table of Contents
 
@@ -26,17 +72,19 @@ MediTrack is a full-stack web application designed to help users access doctor-p
 - [Author](#author)
 - [License](#license)
 
+---
+
 ## Overview
 
-MediTrack is being developed to organize doctor-provided medication information and help users manage personal medication schedules.
+MediTrack is a full-stack web application designed to organize doctor-provided medication information and help users manage their personal medication schedules.
 
-The application follows a role-based design:
+The application follows a role-based design with three main roles:
 
-- **Users** can access published medication instructions and manage their own schedules.
+- **Users** can access published medication instructions and manage their own personal schedules.
 - **Doctors** can manage their own instructions after verification and approval.
 - **Administrators** can review doctor registrations and manage verification decisions.
 
-MediTrack does not replace a medical consultation or independently prescribe medication. Users should follow the instructions provided by their qualified healthcare professional.
+MediTrack does not replace a medical consultation or independently prescribe medication. Users should follow instructions provided by their qualified healthcare professional.
 
 ## Features
 
@@ -95,6 +143,9 @@ MediTrack does not replace a medical consultation or independently prescribe med
 | API testing | Postman |
 | Database tooling | pgAdmin |
 | Version control | Git and GitHub |
+| Frontend hosting | Vercel |
+| Backend hosting | Render |
+| Database hosting | Neon PostgreSQL |
 
 ## Project Structure
 
@@ -116,21 +167,26 @@ meditrack/
 │       ├── routes/
 │       ├── scripts/
 │       └── utils/
-└── frontend/
-    ├── package.json
-    ├── package-lock.json
-    ├── index.html
-    ├── vite.config.js
-    ├── public/
-    └── src/
-        ├── App.jsx
-        ├── main.jsx
-        ├── index.css
-        ├── components/
-        ├── context/
-        ├── hooks/
-        ├── pages/
-        └── services/
+├── frontend/
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── index.html
+│   ├── vite.config.js
+│   ├── public/
+│   └── src/
+│       ├── App.jsx
+│       ├── main.jsx
+│       ├── index.css
+│       ├── components/
+│       ├── context/
+│       ├── hooks/
+│       ├── pages/
+│       └── services/
+└── docs/
+    └── images/
+        ├── meditrack-logo.png
+        ├── home-page.png
+        └── doctor-registration.png
 ```
 
 ### Directory Description
@@ -152,30 +208,32 @@ meditrack/
 | `frontend/src/hooks/` | Custom React hooks. |
 | `frontend/src/pages/` | Application pages. |
 | `frontend/src/services/` | Frontend API communication. |
-| `frontend/src/App.jsx` | Main React component. |
-| `frontend/src/main.jsx` | React entry point. |
-| `frontend/src/index.css` | Global styles. |
-| `frontend/vite.config.js` | Vite configuration. |
+| `docs/images/` | Project logo and README screenshots. |
 
 ## Application Architecture
 
 MediTrack uses a frontend-backend-database architecture.
 
 ```text
-React Frontend
-      |
-      | HTTP requests / JSON
-      v
-Express.js REST API
-      |
-      +--> Authentication and Authorization
-      |
-      +--> User, Doctor and Admin Routes
-      |
-      +--> Controllers and Models
-      |
-      v
-PostgreSQL Database
+             React Frontend
+                   |
+                   | HTTP Requests / JSON
+                   v
+             Express.js REST API
+                   |
+          +--------+---------+
+          |                  |
+ Authentication       Authorization
+          |                  |
+          +--------+---------+
+                   |
+             Controllers
+                   |
+                Models
+                   |
+                   v
+             PostgreSQL
+               Database
 ```
 
 The frontend communicates with the backend through HTTP requests. The backend validates requests, authenticates users, enforces role and ownership restrictions, and interacts with PostgreSQL.
@@ -195,16 +253,14 @@ You may use pgAdmin to inspect and manage the PostgreSQL database.
 
 ## Installation and Setup
 
-### 1. Clone the repository
-
-Replace the placeholder with the actual GitHub repository URL after publishing the repository.
+### 1. Clone the Repository
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
-cd meditrack
+git clone https://github.com/Shresth-shukla-beginercoder/MediTrack.git
+cd MediTrack
 ```
 
-### 2. Install backend dependencies
+### 2. Install Backend Dependencies
 
 ```bash
 cd backend
@@ -231,7 +287,7 @@ Replace the username with your PostgreSQL username. If you use pgAdmin, you can 
 
 Run the schema only according to its contents and your existing database state. If tables already exist, review the SQL before executing it again.
 
-### 4. Configure backend environment variables
+### 4. Configure Backend Environment Variables
 
 Create a `.env` file inside the `backend/` directory.
 
@@ -242,11 +298,11 @@ JWT_SECRET=<GENERATE_A_LONG_RANDOM_SECRET>
 NODE_ENV=development
 ```
 
-These are example variable names. **Check the backend configuration files and use the exact environment variable names expected by your implementation.** If the application uses individual PostgreSQL connection variables instead of `DATABASE_URL`, configure those instead.
+These are example variable names. Check the backend configuration files and use the exact environment variable names expected by your implementation. If the application uses individual PostgreSQL connection variables instead of `DATABASE_URL`, configure those instead.
 
 Do not commit the real `.env` file or publish database passwords, JWT secrets, or access tokens.
 
-### 5. Start the backend
+### 5. Start the Backend
 
 From the `backend/` directory, run:
 
@@ -266,15 +322,9 @@ If it defines a `start` script, use:
 npm start
 ```
 
-The backend is expected to listen on port `5001` in the current local development configuration, unless overridden by environment settings.
+The backend listens on the port configured in your environment variables.
 
-Base URL:
-
-```text
-http://localhost:5001
-```
-
-### 6. Install frontend dependencies
+### 6. Install Frontend Dependencies
 
 Open a second terminal from the project root:
 
@@ -283,7 +333,7 @@ cd frontend
 npm install
 ```
 
-### 7. Start the frontend
+### 7. Start the Frontend
 
 ```bash
 npm run dev
@@ -331,6 +381,14 @@ npm run dev
 **Database**
 
 Confirm that PostgreSQL is running, the `meditrack` database exists, and the configured credentials match your backend environment.
+
+### Live Deployment
+
+| Service | URL |
+|---|---|
+| Frontend | [MediTrack on Vercel](https://medi-track-lake-two.vercel.app/) |
+| Backend | [MediTrack API on Render](https://meditrack-j58b.onrender.com) |
+| Backend Health Check | [API Health Endpoint](https://meditrack-j58b.onrender.com/api/health) |
 
 ## API Reference
 
@@ -394,6 +452,7 @@ The application data model supports the following main concepts:
 - **Doctors:** professional profile and verification information.
 - **Medication instructions:** doctor-created instruction records associated with their owners.
 - **Medication schedules:** personal schedules associated with individual users.
+- **Admins:** administrator account and authentication information.
 
 The exact table names, column names, constraints, and relationships should be checked in `database/schema.sql`.
 
@@ -459,7 +518,6 @@ Planned or potential improvements include:
 - Improve doctor verification workflows.
 - Add automated backend and frontend tests.
 - Add API documentation with request and response examples.
-- Deploy the application using secure production configuration.
 - Improve accessibility, responsive design, logging, and error handling.
 
 These are future improvements and should not be considered completed features unless implemented and tested.
@@ -482,9 +540,8 @@ Do not include secrets, real patient information, or personal credentials in com
 
 B.Tech Computer Science and Engineering — Artificial Intelligence and Machine Learning
 
-GitHub: [Add your GitHub profile URL]
-
-LinkedIn: [Add your LinkedIn profile URL]
+- **GitHub:** [Shresth-shukla-beginercoder](https://github.com/Shresth-shukla-beginercoder)
+- **Project Repository:** [MediTrack](https://github.com/Shresth-shukla-beginercoder/MediTrack)
 
 ## License
 
