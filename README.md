@@ -1,5 +1,5 @@
  <p align="center">
-  <img src="docs/images/meditrack-logo.png" alt="MediTrack Logo" width="160">
+  <img src="/meditrack/docs/images/meditrack-logo.png" alt="MediTrack Logo" width="160">
 </p>
 
 <h1 align="center">MediTrack</h1>
@@ -38,17 +38,6 @@
 
 MediTrack is an ongoing full-stack development project. Backend development and manual API testing are underway, and the tested authentication, administration, instruction-access, and schedule-management flows have been implemented. The React frontend is still under development.
 
-## Screenshots
-
-### Home Page
-
-![MediTrack Home Page](docs/images/home-page.png)
-
-### Doctor Registration
-
-![MediTrack Doctor Registration](docs/images/doctor-registration.png)
-
----
 
 ## Table of Contents
 
